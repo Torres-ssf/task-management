@@ -34,7 +34,7 @@ export class TasksService {
   deleteTask(id: string): void {
     const taskIndex = this.tasks.findIndex((task) => task.id === id);
 
-    if (taskIndex) {
+    if (taskIndex >= 0) {
       this.tasks.splice(taskIndex, 1);
     }
   }
