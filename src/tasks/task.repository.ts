@@ -1,4 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
+import { GetTasksFilterDTO } from './dto/get-tasks-filter.dto';
 import { TaskStatus } from './enums/task-status.enum';
 import { Task } from './task.entity';
 
@@ -17,5 +18,26 @@ export class TaskRepository extends Repository<Task> {
     });
 
     return await this.save(task);
+  }
+
+  async getTasks(getTasksFilterDto: GetTasksFilterDTO): Promise<Task[]> {
+    const { search, status } = getTasksFilterDto;
+
+    const query = this.createQueryBuilder('tasks');
+
+    if (status) {
+      query.where('tasks.status = :status', { status });
+    }
+
+    if (search) {
+      query.andWhere(
+        'tasks.title LIKE :search OR tasks.description LIKE :search',
+        { search: `%${search}%` },
+      );
+    }
+
+    const tasks = await query.getMany();
+
+    return tasks;
   }
 }
