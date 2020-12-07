@@ -1,4 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+
+import { genSalt, hash } from 'bcrypt';
+import { AuthCredentialsDto } from './dto/auth-credentials.dto';
+import { User } from './user.entity';
+import { UserRepository } from './user.repository';
 
 @Injectable()
-export class AuthService {}
+export class AuthService {
+  constructor(private userRepository: UserRepository) {}
+
+  async signUp(authCredentials: AuthCredentialsDto): Promise<User> {
+    const { name, email, password } = authCredentials;
+
+    const userExists = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    if (userExists) {
+      throw new ConflictException('Email already taken');
+    }
+
+    const salt = await genSalt();
+
+    const hashedPassword = await hash(password, salt);
+
+    try {
+      const user = await this.userRepository.createNewUser({
+        name,
+        email,
+        password: hashedPassword,
+        salt,
+      });
+
+      return user;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        'Unexpected erro when trying to create new user',
+      );
+    }
+  }
+}
