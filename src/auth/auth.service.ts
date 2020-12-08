@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { genSalt, hash } from 'bcrypt';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
+import { SignUpCredentialsDto } from './dto/sign-up-credentials.dto';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 
@@ -13,7 +13,7 @@ import { UserRepository } from './user.repository';
 export class AuthService {
   constructor(private userRepository: UserRepository) {}
 
-  async signUp(authCredentials: AuthCredentialsDto): Promise<User> {
+  async signUp(authCredentials: SignUpCredentialsDto): Promise<User> {
     const { name, email, password } = authCredentials;
 
     const userExists = await this.userRepository.findOne({
